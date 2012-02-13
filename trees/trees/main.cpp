@@ -1,5 +1,5 @@
 #include <iostream>
-#include <cstdlib>
+#include <cstdio>
 using namespace std;
 
 const char  fInName [] = "test.in";
@@ -21,7 +21,7 @@ Node* find (int x, Node* node)
             else return node;
 }
 
-void add (int x, Node* node)
+void add (int x, Node* &node)
 {
     if (node==NULL)
     {
@@ -72,7 +72,7 @@ Node* findMaximum (Node* node)
         }
 }
 
-bool remove (int x, Node* node)
+bool remove (int x, Node* &node)
 {
     if (node==NULL)
     {
@@ -115,5 +115,15 @@ bool remove (int x, Node* node)
 
 int main ()
 {
+    FILE* fin = fopen ("test.in","r");
+    Node* root = NULL;
+    while (!feof (fin))
+    {
+        int tmp =0;
+        fscanf (fin,"%d",&tmp);
+        add (tmp,root);
+    }
+    fclose (fin);
+    remove (root->key,root);
     return 0;
 }
