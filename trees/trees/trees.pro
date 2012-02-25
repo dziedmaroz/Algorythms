@@ -18,4 +18,7 @@ TEMPLATE = app
 SOURCES += main.cpp
 
 OTHER_FILES += \
-    test.in
+    test.in \
+    01.in \
+    02.in \
+    03.in
