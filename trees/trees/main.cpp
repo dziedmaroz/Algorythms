@@ -196,6 +196,31 @@ void process (Node* &result, Node* root)
     {
         process(result,root->lChild);
         process(result,root->rChild);
+        if (root->leftPath+root->rightPath > result->rightPath+result->leftPath)
+        {
+            result = root;
+        }
+        else
+        {
+            if (root->leftPath+root->rightPath == result->rightPath+result->leftPath)
+            {
+                int resLeftLRightSumm = result->lChild->leaf->key + result->rChild->leaf->parent->key;
+                int resLeftRightLSumm = result->lChild->leaf->parent->key + result->rChild->leaf->key;
+
+                int rooLeftLRightSumm = root->lChild->leaf->key + root->rChild->leaf->parent->key;
+                int rooLeftRightLSumm = root->lChild->leaf->parent->key + root->rChild->leaf->key;
+
+                if (resLeftLRightSumm>rooLeftLRightSumm || resLeftLRightSumm > rooLeftRightLSumm || resLeftRightLSumm > rooLeftLRightSumm || resLeftRightLSumm > rooLeftRightLSumm)
+                {
+                    result = root;
+                }
+                else
+                {
+                    if (resLeftLRightSumm==rooLeftLRightSumm && resLeftLRightSumm == rooLeftRightLSumm && resLeftRightLSumm == rooLeftLRightSumm && resLeftRightLSumm == rooLeftRightLSumm)
+                        if (result->key>root->key) result = root;
+                }
+            }
+        }
     }
 }
 
@@ -212,7 +237,13 @@ int main ()
     fclose (fin);
     root->parent=NULL;
     markup(root);
+    Node* result = root;
+    process(result,root);
     print(root);
+    printf ("VERTEX:\n");
+
+    printf ("KEY: %d lPATH: %d rPATH: %d PARENT: %d KEYLEAF: %d\n",result->key,result->leftPath, result->rightPath,result->parent==NULL?INFINTIE:result->parent->key,result->leaf->key);
+
     remove (root->key,root);
 
     return 0;
