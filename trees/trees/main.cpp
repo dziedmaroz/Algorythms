@@ -212,7 +212,7 @@ void process (Node* &result, Node* root)
 
                 if (resLeftLRightSumm>rooLeftLRightSumm || resLeftLRightSumm > rooLeftRightLSumm || resLeftRightLSumm > rooLeftLRightSumm || resLeftRightLSumm > rooLeftRightLSumm)
                 {
-                    result = root;
+                    result = root;                    
                 }
                 else
                 {
@@ -239,11 +239,24 @@ int main ()
     markup(root);
     Node* result = root;
     process(result,root);
-    print(root);
-    printf ("VERTEX:\n");
+    if ((result->leftPath+result->rightPath)%2!=0)
+    {
+        if (result->leftPath>result->rightPath)
+        {
+            int steps =
+        }
+        else
+        {
+            if (result->rightPath>result->leftPath)
+            {
 
-    printf ("KEY: %d lPATH: %d rPATH: %d PARENT: %d KEYLEAF: %d\n",result->key,result->leftPath, result->rightPath,result->parent==NULL?INFINTIE:result->parent->key,result->leaf->key);
-
+            }
+            else
+            {
+                remove(result->key,root);
+            }
+        }
+    }
     remove (root->key,root);
 
     return 0;
