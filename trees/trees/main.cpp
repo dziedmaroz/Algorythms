@@ -145,7 +145,8 @@ void markup (Node* &root)
     root->leaf = NULL;
     if (root->rChild!=NULL)
     {
-        root->rightPath=max(root->rChild->rightPath,root->rChild->leftPath)+1;
+        root->rightPath=max(root->rChild->rightPath,root->rChild->leftPath);
+        root->rightPath++;
         root->rChild->parent=root;
     }
     else
@@ -154,7 +155,8 @@ void markup (Node* &root)
     }
     if (root->lChild!=NULL)
     {
-        root->leftPath = max (root->lChild->rightPath,root->lChild->leftPath)+1;
+        root->leftPath = max (root->lChild->rightPath,root->lChild->leftPath);
+        root->leftPath ++;
         root->lChild->parent = root;
     }
     else
@@ -224,6 +226,16 @@ void process (Node* &result, Node* root)
     }
 }
 
+void printfile (FILE* fout,Node* root)
+{
+    if (root!=NULL)
+    {
+        fprintf(fout,"%d\n",root->key);
+        if (root->lChild) printfile(fout,root->lChild);
+        if (root->rChild) printfile(fout, root->rChild);
+    }
+}
+
 int main ()
 {
     FILE* fin = fopen (fInName,"r");
@@ -239,25 +251,44 @@ int main ()
     markup(root);
     Node* result = root;
     process(result,root);
-    if ((result->leftPath+result->rightPath)%2!=0)
+    if (result->leftPath * result->rightPath)
     {
-        if (result->leftPath>result->rightPath)
+        if (result->lChild->leaf->key + result->rChild->leaf->parent->key < result->lChild->leaf->parent->key + result->rChild->leaf->key)
         {
-            int steps =
-        }
-        else
-        {
-            if (result->rightPath>result->leftPath)
+            result->rightPath = result->rightPath - 1;
+            if ((result->rightPath + result->leftPath)%2==0)
             {
 
+                    Node* tmp = result;
+                    for (int i=0;i<(result->leftPath+result->rightPath)/2-result->leftPath;i++)
+                    {
+                        tmp = tmp->leftPath> tmp->rightPath ? tmp->lChild : tmp->rChild;
+                    }
+                    remove(tmp->key,root);
             }
-            else
+        }
+
+        else
+        {
+            if (result->lChild->leaf->key + result->rChild->leaf->parent->key > result->lChild->leaf->parent->key + result->rChild->leaf->key)
             {
-                remove(result->key,root);
+                result->leftPath = result->leftPath -1;
+                if ((result->rightPath + result->leftPath)%2==0)
+                {
+                    Node* tmp = result;
+                    for (int i=0;i<(result->leftPath+result->rightPath)/2-result->leftPath;i++)
+                    {
+                        tmp = tmp->leftPath> tmp->rightPath ? tmp->lChild : tmp->rChild;
+                    }
+                    remove(tmp->key,root);
+                }
             }
         }
     }
+ //   print (root);
+    FILE* fout = fopen (fOutName,"w");
+    printfile(fout,root);
+    fclose(fout);
     remove (root->key,root);
-
     return 0;
 }
