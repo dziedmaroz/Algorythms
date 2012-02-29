@@ -2,11 +2,15 @@
 if [ -n $1 ]
 then
 	find "tests/" -type f |grep .in | while read FILENAME; do
-		echo "Running on test: \'$FILENAME\'"
+		echo -e '\E[33;40mRunning on test: $FILENAME'
+		tput sgr0
 		cp $FILENAME tst.in
 		echo "Starting $1..."
 		./$1
 		echo "Compare ${FILENAME:0:${#FILENAME}-3}.out & tst.out"
+		echo -e '\E[32;40m'
 		diff -s -y  ${FILENAME:0:${#FILENAME}-3}".out" tst.out | grep идентичны
+		tput sgr0
+		echo "===================================================================="
 	done
 fi
