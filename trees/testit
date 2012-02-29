@@ -1,0 +1,12 @@
+#!/bin/bash
+if [ -n $1 ]
+then
+	find "../tests/" -type f |grep .in | while read FILENAME; do
+		echo "Running on test: \'$FILENAME\'"
+		cp $FILENAME tst.in
+		echo "Starting $1..."
+		./$1
+		echo "Compare ${FILENAME:0:${#FILENAME}-3}.out & tst.out"
+		diff -s -y  ${FILENAME:0:${#FILENAME}-3}".out" tst.out | grep идентичны
+	done
+fi
