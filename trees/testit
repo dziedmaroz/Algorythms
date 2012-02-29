@@ -1,7 +1,7 @@
 #!/bin/bash
 if [ -n $1 ]
 then
-	find "../tests/" -type f |grep .in | while read FILENAME; do
+	find "tests/" -type f |grep .in | while read FILENAME; do
 		echo "Running on test: \'$FILENAME\'"
 		cp $FILENAME tst.in
 		echo "Starting $1..."
