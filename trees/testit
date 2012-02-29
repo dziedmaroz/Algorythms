@@ -2,7 +2,7 @@
 if [ -n $1 ]
 then
 	find "tests/" -type f |grep .in | while read FILENAME; do
-		echo -e '\E[33;40mRunning on test: $FILENAME'
+		echo -e '\E[33;40mRunning on test: ' $FILENAME
 		tput sgr0
 		cp $FILENAME tst.in
 		echo "Starting $1..."
