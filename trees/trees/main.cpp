@@ -211,11 +211,34 @@ void process (Node* &result, Node* root)
         {
             if (root->leftPath+root->rightPath == result->rightPath+result->leftPath)
             {
-                int resLeftLRightSumm = result->lChild?result->lChild->leaf->key:0 + result->rChild?result->rChild->leaf->parent->key:0;
-                int resLeftRightLSumm = result->lChild?result->lChild->leaf->parent->key:0 + result->rChild?result->rChild->leaf->key:0;
 
-                int rooLeftLRightSumm = root->lChild?root->lChild->leaf->key:0 + root->rChild?root->rChild->leaf->parent->key:0;
-                int rooLeftRightLSumm = root->lChild?root->lChild->leaf->parent->key:0 + root->rChild?root->rChild->leaf->key:0;
+                int resLeftLRightSumm = result->lChild?result->lChild->leaf->key:result->key + result->rChild?result->rChild->leaf->parent->key:result->key;
+                int resLeftRightLSumm = result->lChild?result->lChild->leaf->parent->key:result->key + result->rChild?result->rChild->leaf->key:result->key;
+
+                int rooLeftLRightSumm = root->lChild?root->lChild->leaf->key:root->key + root->rChild?root->rChild->leaf->parent->key:root->key;
+                int rooLeftRightLSumm = root->lChild?root->lChild->leaf->parent->key:root->key + root->rChild?root->rChild->leaf->key:root->key;
+
+                if (result->lChild==NULL && result->rChild!=NULL)
+                {
+                    resLeftLRightSumm = result->key + result->rChild->leaf->key;
+                    resLeftRightLSumm = result->key + result->rChild->leaf->key;
+                }
+                if (result->lChild!=NULL && result->rChild==NULL)
+                {
+                    resLeftLRightSumm = result->key + result->lChild->leaf->key;
+                    resLeftRightLSumm = result->key + result->lChild->leaf->key;
+                }
+
+                if (root->lChild==NULL && root->rChild!=NULL)
+                {
+                    resLeftLRightSumm = root->key + root->rChild->leaf->key;
+                    resLeftRightLSumm = root->key + root->rChild->leaf->key;
+                }
+                if (root->lChild!=NULL && root->rChild==NULL)
+                {
+                    resLeftLRightSumm = root->key + root->lChild->leaf->key;
+                    resLeftRightLSumm = root->key + root->lChild->leaf->key;
+                }
 
                 if (resLeftLRightSumm>rooLeftLRightSumm || resLeftLRightSumm > rooLeftRightLSumm || resLeftRightLSumm > rooLeftLRightSumm || resLeftRightLSumm > rooLeftRightLSumm)
                 {
@@ -293,23 +316,24 @@ int main ()
         if ((result->leftPath+result->rightPath)%2==1)
         {
 
+            Node* tmp = NULL;
             if (result->lChild->leaf->key + result->rChild->leaf->parent->key < result->lChild->leaf->parent->key + result->rChild->leaf->key)
             {
                 endA = result->lChild->leaf;
                 endB = result->rChild->leaf->parent;
+                levels = (result->leftPath+result->rightPath)/2 + 1;
+                findMidle(result, result->lChild->leaf , result->rChild->leaf->parent );
+                tmp = res;
             }
-            else
+            if (result->lChild->leaf->key + result->rChild->leaf->parent->key > result->lChild->leaf->parent->key + result->rChild->leaf->key)
             {
-                if (result->lChild->leaf->key + result->rChild->leaf->parent->key > result->lChild->leaf->parent->key + result->rChild->leaf->key)
-                {
-                    endA = result->lChild->leaf->parent;
-                    endB = result->rChild->leaf;
-                }
+                endA = result->lChild->leaf->parent;
+                endB = result->rChild->leaf;
+                levels = (result->leftPath+result->rightPath)/2 + 1;
+                findMidle(result,result->lChild?result->lChild->leaf:NULL,result->rChild?result->rChild->leaf->parent:NULL);
             }
-
-            levels = (result->leftPath+result->rightPath)/2 + 1;
-            findMidle(result,result->lChild?result->lChild->leaf:NULL,result->rChild?result->rChild->leaf->parent:NULL);
-            remove(res->key,root);
+            if ((tmp==NULL && res!=NULL) || tmp == res)
+            if (res!=NULL ) remove(res->key,root);
         }
     }
     else
