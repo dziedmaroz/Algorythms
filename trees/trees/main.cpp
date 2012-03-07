@@ -27,7 +27,7 @@ Node* find (int x, Node* node)
     else
         if (x<node->key) return find (x,node->lChild);
         else if (x>node->key) return find (x, node->rChild);
-            else return node;
+        else return node;
 }
 
 void add (int x, Node* &node)
@@ -92,36 +92,36 @@ bool remove (int x, Node* &node)
     {
         if (x<node->key)
         {
-           return  remove(x,node->lChild);
+            return  remove(x,node->lChild);
         }
         else if (x>node->key)
         {
             return remove(x,node->rChild);
         }
-            else
+        else
+        {
+            if(node->lChild==NULL)
             {
-                if(node->lChild==NULL)
+                Node* tmp = node;
+                node= node->rChild;
+                delete tmp;
+                return true;
+            }
+            else
+                if (node->rChild==NULL)
                 {
                     Node* tmp = node;
-                    node= node->rChild;
+                    node = node->lChild;
                     delete tmp;
                     return true;
                 }
                 else
-                    if (node->rChild==NULL)
-                    {
-                        Node* tmp = node;
-                        node = node->lChild;
-                        delete tmp;
-                        return true;
-                    }
-                    else
-                    {
-                        Node* tmp =findMinimum(node->rChild);
-                        node->key=tmp->key;
-                        return remove(node->key,node->rChild);
-                    }
-            }
+                {
+                    Node* tmp =findMinimum(node->rChild);
+                    node->key=tmp->key;
+                    return remove(node->key,node->rChild);
+                }
+        }
     }
 }
 
@@ -266,25 +266,21 @@ void printfile (FILE* fout,Node* root)
 
 void findMidle (Node* root, Node* endA, Node* endB)
 {
-
-    if(root->parent==endA || root->parent==endB)
-    {
-        return;
-    }
-    if (root->lChild && (root->lChild->leaf == endA->leaf || root->lChild->leaf == endB->leaf)  )
+    if ((root->lChild && (root->lChild->leaf == endA->leaf || root->lChild->leaf == endB->leaf)) && root!=endA && root!=endB  )
     {
 
         findMidle(root->lChild,endA,endB);
     }
-    levels--;
+
     if (levels==0)
     {
         res = root;
+        levels--;
         return;
     }
-  //  printf ("LEVELS: %d KEY: %d\n",levels,root->key);
-
-    if (root->rChild && (root->rChild->leaf  == endA->leaf || root->rChild->leaf == endB->leaf) )
+    levels--;
+    //  printf ("LEVELS: %d KEY: %d\n",levels,root->key);
+    if ((root->rChild && (root->rChild->leaf  == endA->leaf || root->rChild->leaf == endB->leaf)) && root!=endA && root!=endB)
     {
 
         findMidle(root->rChild,endA,endB);
@@ -309,30 +305,29 @@ int main ()
 
     Node* result = root;
     process(result,root);   
+    // print (root);
+    // printf ("KEY %d\n",result->key);
     Node* endA = NULL;
     Node* endB = NULL;
     if ((result->lChild!=NULL) && (result->rChild!=NULL))
     {
         if ((result->leftPath+result->rightPath)%2==1)
         {
-
-            Node* tmp = NULL;
             if (result->lChild->leaf->key + result->rChild->leaf->parent->key < result->lChild->leaf->parent->key + result->rChild->leaf->key)
             {
                 endA = result->lChild->leaf;
                 endB = result->rChild->leaf->parent;
-                levels = (result->leftPath+result->rightPath)/2 + 1;
-                findMidle(result, result->lChild->leaf , result->rChild->leaf->parent );
-                tmp = res;
+                levels = (result->leftPath+result->rightPath)/2  ;
+                findMidle(result, endA , endB);
+
             }
             if (result->lChild->leaf->key + result->rChild->leaf->parent->key > result->lChild->leaf->parent->key + result->rChild->leaf->key)
             {
                 endA = result->lChild->leaf->parent;
                 endB = result->rChild->leaf;
-                levels = (result->leftPath+result->rightPath)/2 + 1;
-                findMidle(result,result->lChild?result->lChild->leaf:NULL,result->rChild?result->rChild->leaf->parent:NULL);
+                levels = (result->leftPath   +result->rightPath)/2 ;
+                findMidle(result,endA,endB);
             }
-            if ((tmp==NULL && res!=NULL) || tmp == res)
             if (res!=NULL ) remove(res->key,root);
         }
     }
@@ -342,7 +337,7 @@ int main ()
         {
             if (result->rightPath%2 == 0)
             {
-                levels = result->rightPath/2 +1 ;
+                levels = result->rightPath/2 ;
 
                 findMidle(result,result->leaf,result->leaf);
                 remove(res->key,root);
@@ -354,7 +349,7 @@ int main ()
             if (result->leftPath%2 ==0)
             {
 
-                levels = result->leftPath/2 +1;
+                levels = result->leftPath/2 ;
                 findMidle(result,result->leaf,result->leaf);
                 remove(res->key,root);
 
