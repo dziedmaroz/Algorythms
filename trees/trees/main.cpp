@@ -305,8 +305,8 @@ int main ()
 
     Node* result = root;
     process(result,root);   
-    print (root);
-    printf ("KEY %d\n",result->key);
+  //  print (root);
+ //   printf ("KEY %d\n",result->key);
     Node* endA = NULL;
     Node* endB = NULL;
     if ((result->lChild!=NULL) && (result->rChild!=NULL))
