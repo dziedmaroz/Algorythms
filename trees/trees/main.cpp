@@ -305,8 +305,8 @@ int main ()
 
     Node* result = root;
     process(result,root);   
-    // print (root);
-    // printf ("KEY %d\n",result->key);
+    print (root);
+    printf ("KEY %d\n",result->key);
     Node* endA = NULL;
     Node* endB = NULL;
     if ((result->lChild!=NULL) && (result->rChild!=NULL))
@@ -325,7 +325,7 @@ int main ()
             {
                 endA = result->lChild->leaf->parent;
                 endB = result->rChild->leaf;
-                levels = (result->leftPath   +result->rightPath)/2 ;
+                levels = (result->leftPath   +result->rightPath)/2  ;
                 findMidle(result,endA,endB);
             }
             if (res!=NULL ) remove(res->key,root);
@@ -349,7 +349,7 @@ int main ()
             if (result->leftPath%2 ==0)
             {
 
-                levels = result->leftPath/2 ;
+                levels = result->leftPath/2;
                 findMidle(result,result->leaf,result->leaf);
                 remove(res->key,root);
 
