@@ -2,13 +2,14 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
-#include <set>
-
+#include <map>
 using namespace std;
 //                     a    b    c    d    e    f    g    h    i    j    k    l    m    n    o    p    q    r    s    t    u    v    w    x    y    z
 const char table[] = {'2', '2', '2', '3', '3', '3', '4', '4', '1', '1', '5', '5', '6', '6', '0', '7', '0', '7', '7', '8', '8', '8', '9', '9', '9', '0'};
 const char file_in[] = "input.txt";
 const char file_out[] = "output.txt";
+
+
 
 struct Word
 {
@@ -20,6 +21,11 @@ struct Res
     int count;
     int delim;
 };
+
+int cmp (Word wrd1, Word wrd2)
+{
+    return strncmp(wrd1.number,wrd2.number,strlen(wrd1.number));
+}
 
 char* wtn (char* word)
 {
@@ -41,8 +47,8 @@ int sgn (int x){return x==0?0:1;}
 int main ()
 {
     FILE* fin = fopen ("input.txt","r");
-    int wordCount = 0;    
-
+    int wordCount = 0;
+    map<int, map<char* , Word> > words;
     Res** result = new Res* [10000];
     for (int i=0;i<10000;i++)
     {
@@ -55,10 +61,10 @@ int main ()
     }
 
 
-
     char* number = new char[10000];
-    int numLen = strlen(number);
+
     fscanf(fin,"%s",number);
+    int numLen = strlen(number);
     fscanf(fin,"%d",&wordCount);
     for (int i= 0;i<wordCount;i++)
     {
@@ -66,20 +72,19 @@ int main ()
         wrd->word = new char [100];
         fscanf(fin,"%s",wrd->word);
         wrd->number = wtn(wrd->word);
-
-
+        words[strlen(wrd->number)][wrd->number]=*wrd;
+        delete wrd;
     }
     fclose (fin);
 
     for (int j=0;j<numLen;j++)
     {
-        for (int i=j;i>0;i--)
+        for (int i=j;i>=0;i--)
         {
             char* tmp = new char [j-i+2];
             strncpy(tmp,number+i,j-i+1);
             tmp[j-i+1]='\0';
-
-            if (wrd!=NULL)
+            if (words[strlen(tmp)][tmp].number!=NULL)
             {
                 result[i][j].count=1;
             }
@@ -97,7 +102,7 @@ int main ()
                     }
                 }
             }
-
+            delete[] tmp;
         }
     }
 
