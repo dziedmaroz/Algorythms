@@ -72,6 +72,7 @@ int main ()
         wrd->word = new char [100];
         fscanf(fin,"%s",wrd->word);
         wrd->number = wtn(wrd->word);
+        cout<<wrd<<endl;
         words[strlen(wrd->number)][wrd->number]=*wrd;
         delete wrd;
     }
