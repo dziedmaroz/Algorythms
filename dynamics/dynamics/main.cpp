@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <set>
 
 using namespace std;
 //                     a    b    c    d    e    f    g    h    i    j    k    l    m    n    o    p    q    r    s    t    u    v    w    x    y    z
@@ -40,7 +41,8 @@ int sgn (int x){return x==0?0:1;}
 int main ()
 {
     FILE* fin = fopen ("input.txt","r");
-    int wordCount = 0;
+    int wordCount = 0;    
+
     Res** result = new Res* [10000];
     for (int i=0;i<10000;i++)
     {
@@ -53,7 +55,7 @@ int main ()
     }
 
 
-  //  Node* words = new Node [100];
+
     char* number = new char[10000];
     int numLen = strlen(number);
     fscanf(fin,"%s",number);
@@ -64,7 +66,7 @@ int main ()
         wrd->word = new char [100];
         fscanf(fin,"%s",wrd->word);
         wrd->number = wtn(wrd->word);
-     //   Node* tmp = &words[strlen(wrd->word)];
+
 
     }
     fclose (fin);
