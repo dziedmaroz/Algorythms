@@ -2,7 +2,9 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <string>
 #include <map>
+#include <set>
 using namespace std;
 //                     a    b    c    d    e    f    g    h    i    j    k    l    m    n    o    p    q    r    s    t    u    v    w    x    y    z
 const char table[] = {'2', '2', '2', '3', '3', '3', '4', '4', '1', '1', '5', '5', '6', '6', '0', '7', '0', '7', '7', '8', '8', '8', '9', '9', '9', '0'};
@@ -13,18 +15,18 @@ const char file_out[] = "output.txt";
 
 struct Word
 {
-    char* word;
-    char* number;
+    string word;
+    string number;
 };
 struct Res
 {
     int count;
-    int delim;
+    set<int> delim;
 };
 
 int cmp (Word wrd1, Word wrd2)
 {
-    return strncmp(wrd1.number,wrd2.number,strlen(wrd1.number));
+    return wrd1.number.compare(wrd2.number);
 }
 
 char* wtn (char* word)
@@ -48,19 +50,8 @@ int main ()
 {
     FILE* fin = fopen ("input.txt","r");
     int wordCount = 0;
-    map<int, map<char* , Word> > words;
+    map<int, map<string , Word> > words;
     Res** result = new Res* [10000];
-    for (int i=0;i<10000;i++)
-    {
-        result[i]= new Res [10000];
-        for (int j=0;j<10000;j++)
-        {
-            result[i][j].count=0;
-            result[i][j].delim=j;
-        }
-    }
-
-
     char* number = new char[10000];
 
     fscanf(fin,"%s",number);
@@ -68,13 +59,22 @@ int main ()
     fscanf(fin,"%d",&wordCount);
     for (int i= 0;i<wordCount;i++)
     {
-        Word* wrd = new Word;
-        wrd->word = new char [100];
-        fscanf(fin,"%s",wrd->word);
-        wrd->number = wtn(wrd->word);
-        cout<<wrd<<endl;
-        words[strlen(wrd->number)][wrd->number]=*wrd;
-        delete wrd;
+        Word wrd;
+        char* tmp = new char [100];
+        fscanf(fin,"%s",tmp);
+        wrd.word = string(tmp);
+        wrd.number = string(wtn(tmp));
+        words[strlen(tmp)][wrd.number]=wrd;
+        delete tmp;
+    }
+    for (int i=0;i<numLen;i++)
+    {
+        result[i]= new Res [numLen];
+        for (int j=i;j<numLen;j++)
+        {
+            result[i][j].count=0;
+            //result[i][j].delim.clear();
+        }
     }
     fclose (fin);
 
@@ -84,21 +84,36 @@ int main ()
         {
             char* tmp = new char [j-i+2];
             strncpy(tmp,number+i,j-i+1);
-            tmp[j-i+1]='\0';
-            if (words[strlen(tmp)][tmp].number!=NULL)
+            tmp[j-i+1]='\0';            
+            //if (words[strlen(tmp)][string(tmp)].number!="")
+            if(words.find(strlen(tmp))!=words.end() && words[strlen(tmp)].find(string(tmp))!=words[strlen(tmp)].end())
             {
                 result[i][j].count=1;
+                result[i][j].delim.clear();
+                result[i][j].delim.insert(j);
             }
             else
             {                 
                 for (int k=i;k<j;k++)
                 {
-                    if (sgn(result[i][k].count*result[i+k+1][j].count))
+                    if (result[i][k].count!=0 && result[k+1][j].count!=0)
                     {
-                        if (result[i][j].count>result[i][k].count+result[k+1][j].count || result[i][j].count==0)
+                        if (result[i][j].count==0)
                         {
                             result[i][j].count = result[i][k].count+result[k+1][j].count;
-                            result[i][j].delim = k;
+                            result[i][j].delim.clear();
+                            result[i][j].delim.insert(result[i][k].delim.begin(), result[i][k].delim.end());
+                            result[i][j].delim.insert(result[k+1][j].delim.begin(),result[k+1][j].delim.end());
+                        }
+                        else
+                        {
+                            if (result[i][j].count>result[i][k].count+result[k+1][j].count)
+                            {
+                                result[i][j].count = result[i][k].count+result[k+1][j].count;
+                                result[i][j].delim.clear();
+                                result[i][j].delim.insert(result[i][k].delim.begin(), result[i][k].delim.end());
+                                result[i][j].delim.insert(result[k+1][j].delim.begin(),result[k+1][j].delim.end());
+                            }
                         }
                     }
                 }
@@ -107,18 +122,46 @@ int main ()
         }
     }
 
-    for (int i=0;i<wordCount;i++)
+    FILE* fout = fopen(file_out,"w");
+    if (result[0][numLen-1].count!=0)
     {
-        for (int j=0;j<wordCount;j++)
+        fprintf(fout,"%d\n",result[0][numLen-1].count);
+        string numStr = string(number);
+        int* tmpArr = new int[result[0][numLen-1].delim.size()];
+        int k =0;
+        for (set<int>::iterator i = result[0][numLen-1].delim.begin(); i!=result[0][numLen-1].delim.end();i++ )
         {
-            printf ("%3d",result[i][j].count);
+            tmpArr[k]=*i;
+            k++;
+
         }
-        printf("\n");
+        fprintf(fout,"%s ",words[tmpArr[0]+1][numStr.substr(0,tmpArr[0]+1)].word.c_str());
+        for (int i=1;i<result[0][numLen-1].delim.size();i++)
+        {
+
+            if (i+1==result[0][numLen-1].delim.size())
+            {
+                fprintf(fout,"%s",words[tmpArr[i]-tmpArr[i-1]][numStr.substr(tmpArr[i-1]+1,tmpArr[i]-tmpArr[i-1])].word.c_str());
+            }
+            else
+            {
+                fprintf(fout,"%s ",words[tmpArr[i]-tmpArr[i-1]][numStr.substr(tmpArr[i-1]+1,tmpArr[i]-tmpArr[i-1])].word.c_str());
+            }
+        }
+        delete [] tmpArr;
+        fprintf(fout,"\n");
     }
+    else
+    {
+        fprintf(fout,"No solution\n");
+    }
+
+
     for (int i=0;i<10000;i++)
     {
         delete[] result[i];
     }
+
     delete[] result;
     delete[] number;    
     return 0;
