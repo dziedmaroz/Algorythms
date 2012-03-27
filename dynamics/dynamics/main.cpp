@@ -5,6 +5,7 @@
 #include <string>
 #include <map>
 #include <set>
+#include <stack>
 using namespace std;
 //                     a    b    c    d    e    f    g    h    i    j    k    l    m    n    o    p    q    r    s    t    u    v    w    x    y    z
 const char table[] = {'2', '2', '2', '3', '3', '3', '4', '4', '1', '1', '5', '5', '6', '6', '0', '7', '0', '7', '7', '8', '8', '8', '9', '9', '9', '0'};
@@ -12,157 +13,161 @@ const char file_in[] = "input.txt";
 const char file_out[] = "output.txt";
 
 
-
-struct Word
+struct Node
 {
-    string word;
-    string number;
-};
-struct Res
-{
-    int count;
-    set<int> delim;
+    char chLetter;
+    char chNum;
+    map<char, Node*> children;
+    bool wrdBegin;
 };
 
-int cmp (Word wrd1, Word wrd2)
+string wordToNumber (string word)
 {
-    return wrd1.number.compare(wrd2.number);
-}
-
-char* wtn (char* word)
-{
-    char* res = new char [strlen(word)+1];
-    for (int i=0;i<strlen(word);i++)
+    string num = word;
+    for (int i=0;i<word.length();i++)
     {
         if (word[i]>='A' && word[i]<='Z')
-            res[i]=table[word[i]-'A'];
-        else
-            res[i]=word[i];
+        {
+            num[i] = table[word[i]-'A'];
+        }
     }
-    return res;
+    return num;
 }
 
-int sgn (int x){return x==0?0:1;}
 
+void addWord (string word, Node* &node, int pos)
+{
+    pos--;
+    if (node->children[word[pos]]==NULL)
+    {
+        node->children[word[pos]]=new Node;
+        node->children[word[pos]]->chLetter = word[pos];
+        if (word[pos]>='A' && word[pos]<='Z')
+        {
+            node->children[word[pos]]->chNum = table[word[pos]-'A'];
+        }
+        else
+        {
+             node->children[word[pos]]->chNum = word[pos];
+        }
+    }
+    if (pos==0)
+    {
+        node->children[word[pos]]->wrdBegin = true;
+    }
+    else
+    {
+        node->children[word[pos]]->wrdBegin = false;
+        addWord (word,node->children[word[pos]],pos);
+    }
+}
 
+bool contains (string word, Node* &node, int pos)
+{
+    if (pos==0)
+    {
+        return node->wrdBegin;
+    }
+    pos--;
+    if (node->children[word[pos]]!=NULL) return contains(word,node->children[word[pos]],pos);
+    return false;
+}
 
+void clear (Node* &node)
+{
+    map<char, Node*>::iterator iter;
+    for (iter = node->children.begin(); iter!=node->children.end();iter++)
+    {
+        if (iter->second!=NULL) clear(iter->second);
+    }
+    delete  node;
+}
 int main ()
 {
-    FILE* fin = fopen ("input.txt","r");
-    int wordCount = 0;
-    map<int, map<string , Word> > words;
-    Res** result = new Res* [10000];
-    char* number = new char[10000];
-
-    fscanf(fin,"%s",number);
-    int numLen = strlen(number);
-    fscanf(fin,"%d",&wordCount);
-    for (int i= 0;i<wordCount;i++)
+    Node* root = new Node;
+    FILE* fin = fopen (file_in,"r");
+    map<int, map<string , string> > words;
+   //string number;
+    char number [10010];
+    int resTable [10010][2];
+    fscanf(fin,"%s",&number);
+    for (int i=0;i<strlen(number);i++)
     {
-        Word wrd;
-        char* tmp = new char [100];
-        fscanf(fin,"%s",tmp);
-        wrd.word = string(tmp);
-        wrd.number = string(wtn(tmp));
-        words[strlen(tmp)][wrd.number]=wrd;
-        delete tmp;
+        resTable[i][0] = 0;
+        resTable[i][1] = 0;
     }
-    for (int i=0;i<numLen;i++)
+    int wordCount = 0 ;
+    fscanf (fin,"%d",&wordCount);
+    string word;
+    string num;
+    for (int i=0;i<wordCount;i++)
     {
-        result[i]= new Res [numLen];
-        for (int j=i;j<numLen;j++)
-        {
-            result[i][j].count=0;
-            //result[i][j].delim.clear();
-        }
+        char tmpStr [110];
+        fscanf (fin,"%s",&tmpStr);
+        word = tmpStr;
+        num = wordToNumber(word);
+        addWord(num,root,num.length());
+        words[num.length()][num]=word;
     }
     fclose (fin);
 
-    for (int j=0;j<numLen;j++)
+    for (int i=0;i<strlen(number);i++)
     {
-        for (int i=j;i>=0;i--)
+        int k = i;
+        Node* node = root;
+        while (k>=0 && k<=i && i-k<=100 && node->children[number[k]]!=NULL)
         {
-            char* tmp = new char [j-i+2];
-            strncpy(tmp,number+i,j-i+1);
-            tmp[j-i+1]='\0';            
-            //if (words[strlen(tmp)][string(tmp)].number!="")
-            if(words.find(strlen(tmp))!=words.end() && words[strlen(tmp)].find(string(tmp))!=words[strlen(tmp)].end())
+            node = node->children[number[k]];
+            if (node->wrdBegin)
             {
-                result[i][j].count=1;
-                result[i][j].delim.clear();
-                result[i][j].delim.insert(j);
-            }
-            else
-            {                 
-                for (int k=i;k<j;k++)
+                if (k==0)
                 {
-                    if (result[i][k].count!=0 && result[k+1][j].count!=0)
+                    resTable[i][0]=1;
+                    resTable[i][1]=0;
+                }
+                else
+                {
+                    if (resTable[k-1][0]!=0 && (resTable[i][0] < resTable[k-1][0]+1 || resTable[i][0]==0))
                     {
-                        if (result[i][j].count==0)
-                        {
-                            result[i][j].count = result[i][k].count+result[k+1][j].count;
-                            result[i][j].delim.clear();
-                            result[i][j].delim.insert(result[i][k].delim.begin(), result[i][k].delim.end());
-                            result[i][j].delim.insert(result[k+1][j].delim.begin(),result[k+1][j].delim.end());
-                        }
-                        else
-                        {
-                            if (result[i][j].count>result[i][k].count+result[k+1][j].count)
-                            {
-                                result[i][j].count = result[i][k].count+result[k+1][j].count;
-                                result[i][j].delim.clear();
-                                result[i][j].delim.insert(result[i][k].delim.begin(), result[i][k].delim.end());
-                                result[i][j].delim.insert(result[k+1][j].delim.begin(),result[k+1][j].delim.end());
-                            }
-                        }
+                        resTable[i][0] = resTable[k-1][0]+1;
+                        resTable[i][1] = k ;
                     }
                 }
             }
-            delete[] tmp;
+            k--;
         }
     }
 
     FILE* fout = fopen(file_out,"w");
-    if (result[0][numLen-1].count!=0)
+    if (resTable[strlen(number)-1][0]!=0)
     {
-        fprintf(fout,"%d\n",result[0][numLen-1].count);
-        string numStr = string(number);
-        int* tmpArr = new int[result[0][numLen-1].delim.size()];
-        int k =0;
-        for (set<int>::iterator i = result[0][numLen-1].delim.begin(); i!=result[0][numLen-1].delim.end();i++ )
-        {
-            tmpArr[k]=*i;
-            k++;
+        fprintf (fout, "%d\n",resTable[strlen(number)-1][0]);
 
+        stack<string> wrds;
+        string tmpStr = string(number);
+        int k=strlen(number)-1;
+        while (k>=0)
+        {
+            wrds.push(words[k-resTable[k][1]+1][tmpStr.substr(resTable[k][1],k-resTable[k][1]+1)]);
+            k = resTable[k][1]-1;
         }
-        fprintf(fout,"%s ",words[tmpArr[0]+1][numStr.substr(0,tmpArr[0]+1)].word.c_str());
-        for (int i=1;i<result[0][numLen-1].delim.size();i++)
+        while (!wrds.empty())
         {
-
-            if (i+1==result[0][numLen-1].delim.size())
+            fprintf(fout,"%s",wrds.top().c_str());
+            wrds.pop();
+            if (!wrds.empty())
             {
-                fprintf(fout,"%s",words[tmpArr[i]-tmpArr[i-1]][numStr.substr(tmpArr[i-1]+1,tmpArr[i]-tmpArr[i-1])].word.c_str());
-            }
-            else
-            {
-                fprintf(fout,"%s ",words[tmpArr[i]-tmpArr[i-1]][numStr.substr(tmpArr[i-1]+1,tmpArr[i]-tmpArr[i-1])].word.c_str());
+                fprintf(fout," ");
             }
         }
-        delete [] tmpArr;
-        fprintf(fout,"\n");
     }
     else
     {
-        fprintf(fout,"No solution\n");
+        fprintf (fout,"No solution\n");
     }
 
 
-    for (int i=0;i<10000;i++)
-    {
-        delete[] result[i];
-    }
-
-    delete[] result;
-    delete[] number;    
+    fclose (fout);
+    clear (root);
     return 0;
 }
