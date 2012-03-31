@@ -115,7 +115,7 @@ int main ()
     {
         int k = i;
         Node* node = root;
-        while (k>=0 && k<=i && i-k<=100 && node->children[number[k]]!=NULL)
+        while (k>=0 && k<=i &&  node->children[number[k]]!=NULL)
         {
             node = node->children[number[k]];
             if (node->wrdBegin)

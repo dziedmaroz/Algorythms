@@ -144,36 +144,114 @@ int min (int x, int y)
 
 void markup (Node* &root)
 {
-    if (root->lChild!=NULL) markup(root->lChild);
+    if (root == NULL) return;
     if (root->rChild!=NULL) markup(root->rChild);
-    if (root->lChild==NULL && root->rChild==NULL)
+    if (root->lChild!=NULL) markup(root->lChild);
+    root->leaf = NULL;
+    if (root->rChild!=NULL)
     {
-        root->leaf=root;
-        root->leftPath=0;
-        root->rightPath = 0;
+        root->rightPath=max(root->rChild->rightPath,root->rChild->leftPath);
+        root->rightPath++;
+        root->rChild->parent=root;
     }
     else
     {
-        root->leaf = NULL;
-        if (root->lChild!=NULL)
+        root->rightPath =0;
+    }
+    if (root->lChild!=NULL)
+    {
+        root->leftPath = max (root->lChild->rightPath,root->lChild->leftPath);
+        root->leftPath ++;
+        root->lChild->parent = root;
+    }
+    else
+    {
+        root->leftPath=0;
+    }
+    if (root->lChild==NULL && root->rChild==NULL) root->leaf=root;
+    else
+    {
+        if (root->lChild==NULL) root->leaf=root->rChild->leaf;
+        else
         {
-            root->leftPath=max (root->lChild->leftPath, root->lChild->rightPath)+1;
-            root->lChild->parent = root;
-            if (root->leaf==NULL || root->leaf->key> root->lChild->leaf->key) root->leaf = root->lChild->leaf;
-        }
-
-        if (root->rChild!=NULL)
-        {
-            root->rightPath = max (root->rChild->rightPath,root->rChild->leftPath)+1;
-            root->rChild->parent = root;
-            if (root->leaf==NULL || root->leaf->key > root->rChild->leaf->key) root->leaf = root->rChild->leaf;
+            if (root->rChild==NULL) root->leaf=root->lChild->leaf;
+            else
+            {
+                if (root->leftPath>root->rightPath)
+                {
+                    root->leaf=root->lChild->leaf;
+                }
+                else
+                {
+                    if (root->leftPath<root->rightPath)
+                    {
+                        root->leaf=root->rChild->leaf;
+                    }
+                    else
+                    {
+                        root->leaf = root->rChild->leaf->key < root->lChild->leaf->key?root->rChild->leaf:root->lChild->leaf;
+                    }
+                }
+            }
         }
     }
 }
 
 void process (Node* &result, Node* root)
 {
+    if (root!=NULL)
+    {
+        process(result,root->lChild);
+        process(result,root->rChild);
+        if (root->leftPath+root->rightPath > result->rightPath+result->leftPath)
+        {
+            result = root;
+        }
+        else
+        {
+            if (root->leftPath+root->rightPath == result->rightPath+result->leftPath)
+            {
 
+                int resLeftLRightSumm = result->lChild?result->lChild->leaf->key:result->key + result->rChild?result->rChild->leaf->parent->key:result->key;
+                int resLeftRightLSumm = result->lChild?result->lChild->leaf->parent->key:result->key + result->rChild?result->rChild->leaf->key:result->key;
+
+                int rooLeftLRightSumm = root->lChild?root->lChild->leaf->key:root->key + root->rChild?root->rChild->leaf->parent->key:root->key;
+                int rooLeftRightLSumm = root->lChild?root->lChild->leaf->parent->key:root->key + root->rChild?root->rChild->leaf->key:root->key;
+
+                if (result->lChild==NULL && result->rChild!=NULL)
+                {
+                    resLeftLRightSumm = result->key + result->rChild->leaf->key;
+                    resLeftRightLSumm = result->key + result->rChild->leaf->key;
+                }
+                if (result->lChild!=NULL && result->rChild==NULL)
+                {
+                    resLeftLRightSumm = result->key + result->lChild->leaf->key;
+                    resLeftRightLSumm = result->key + result->lChild->leaf->key;
+                }
+
+                if (root->lChild==NULL && root->rChild!=NULL)
+                {
+                    resLeftLRightSumm = root->key + root->rChild->leaf->key;
+                    resLeftRightLSumm = root->key + root->rChild->leaf->key;
+                }
+                if (root->lChild!=NULL && root->rChild==NULL)
+                {
+                    resLeftLRightSumm = root->key + root->lChild->leaf->key;
+                    resLeftRightLSumm = root->key + root->lChild->leaf->key;
+                }
+
+                if (resLeftLRightSumm>rooLeftLRightSumm || resLeftLRightSumm > rooLeftRightLSumm || resLeftRightLSumm > rooLeftLRightSumm || resLeftRightLSumm > rooLeftRightLSumm)
+                {
+                    result = root;
+                }
+                else
+                {
+                    if (resLeftLRightSumm==rooLeftLRightSumm && resLeftLRightSumm == rooLeftRightLSumm && resLeftRightLSumm == rooLeftLRightSumm && resLeftRightLSumm == rooLeftRightLSumm)
+                        if (result->key>root->key) result = root;
+                }
+            }
+        }
+    }
 }
 
 void printfile (FILE* fout,Node* root)
@@ -188,7 +266,25 @@ void printfile (FILE* fout,Node* root)
 
 void findMidle (Node* root, Node* endA, Node* endB)
 {
+    if ((root->lChild && (root->lChild->leaf == endA->leaf || root->lChild->leaf == endB->leaf)) && root!=endA && root!=endB  )
+    {
 
+        findMidle(root->lChild,endA,endB);
+    }
+
+    if (levels==0)
+    {
+        res = root;
+        levels--;
+        return;
+    }
+    levels--;
+    //  printf ("LEVELS: %d KEY: %d\n",levels,root->key);
+    if ((root->rChild && (root->rChild->leaf  == endA->leaf || root->rChild->leaf == endB->leaf)) && root!=endA && root!=endB)
+    {
+
+        findMidle(root->rChild,endA,endB);
+    }
 
 }
 
@@ -204,11 +300,65 @@ int main ()
     }
     fclose (fin);
     root->parent=NULL;
+
     markup(root);
-    print(root);
+
+    Node* result = root;
+    process(result,root);
+    // print (root);
+    // printf ("KEY %d\n",result->key);
+    Node* endA = NULL;
+    Node* endB = NULL;
+    if ((result->lChild!=NULL) && (result->rChild!=NULL))
+    {
+        if ((result->leftPath+result->rightPath)%2==1)
+        {
+            if (result->lChild->leaf->key + result->rChild->leaf->parent->key < result->lChild->leaf->parent->key + result->rChild->leaf->key)
+            {
+                endA = result->lChild->leaf;
+                endB = result->rChild->leaf->parent;
+                levels = (result->leftPath+result->rightPath)/2  ;
+                findMidle(result, endA , endB);
+
+            }
+            if (result->lChild->leaf->key + result->rChild->leaf->parent->key > result->lChild->leaf->parent->key + result->rChild->leaf->key)
+            {
+                endA = result->lChild->leaf->parent;
+                endB = result->rChild->leaf;
+                levels = (result->leftPath   +result->rightPath)/2 ;
+                findMidle(result,endA,endB);
+            }
+            if (res!=NULL ) remove(res->key,root);
+        }
+    }
+    else
+    {
+        if (result->lChild==NULL)
+        {
+            if (result->rightPath%2 == 0)
+            {
+                levels = result->rightPath/2 ;
+
+                findMidle(result,result->leaf,result->leaf);
+                remove(res->key,root);
+
+            }
+        }
+        if (result->rChild==NULL)
+        {
+            if (result->leftPath%2 ==0)
+            {
+
+                levels = result->leftPath/2 ;
+                findMidle(result,result->leaf,result->leaf);
+                remove(res->key,root);
+
+            }
+        }
+    }
     FILE* fout = fopen (fOutName,"w");
     printfile(fout,root);
     fclose(fout);
-    while (root!=NULL) remove (root->key,root);
+    remove (root->key,root);
     return 0;
 }
