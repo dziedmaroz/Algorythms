@@ -13,11 +13,11 @@ ARGV.each do |a|
 	for i in 1..numlen do
 		fout<<rand(10)
 	end
-	wordCount = rand(MAX_WORD_COUNT)
+	wordCount = rand(MAX_WORD_COUNT)+1
 	fout<<"\n"<<wordCount<<"\n"
-	for i in 1..wordCount+1 do
+	for i in 0..wordCount-1 do
 		thisWrdLen  = rand(min(numlen,MAX_WORD_LENGTH))
-		for j in 1..thisWrdLen do
+		for j in 1..thisWrdLen+1 do
 			fout<<rand(10)
 		end
 		fout<<"\n"

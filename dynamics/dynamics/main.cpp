@@ -42,6 +42,7 @@ void addWord (string word, Node* &node, int pos)
     {
         node->children[word[pos]]=new Node;
         node->children[word[pos]]->chLetter = word[pos];
+        node->children[word[pos]]->wrdBegin = false;
         if (word[pos]>='A' && word[pos]<='Z')
         {
             node->children[word[pos]]->chNum = table[word[pos]-'A'];
@@ -57,7 +58,6 @@ void addWord (string word, Node* &node, int pos)
     }
     else
     {
-        node->children[word[pos]]->wrdBegin = false;
         addWord (word,node->children[word[pos]],pos);
     }
 }
@@ -105,7 +105,7 @@ int main ()
         char tmpStr [110];
         fscanf (fin,"%s",&tmpStr);
         word = tmpStr;
-        num = wordToNumber(word);
+        num = wordToNumber(word);       
         addWord(num,root,num.length());
         words[num.length()][num]=word;
     }
