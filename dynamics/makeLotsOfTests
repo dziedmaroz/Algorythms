@@ -1,0 +1,15 @@
+#!/bin/bash
+
+BIN_DIR="hugeSolution-build-desktop"
+BIN_PATH="hugeSolution-build-desktop/hugeSolution"
+
+for i in {1..20}
+do 
+	./test_in_gen.rb "tests/$i.in"
+	echo "Test tests/$i.in  generated"
+	cp tests/$i.in input.txt
+	./$BIN_PATH
+	cp "output.txt"  "tests/$i.out"
+	cat output.txt
+		
+done

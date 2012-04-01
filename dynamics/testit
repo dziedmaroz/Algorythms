@@ -1,0 +1,16 @@
+#!/bin/bash
+if [ -n $1 ]
+then
+	find "tests/" -type f |sort |grep .in | while read FILENAME; do
+		echo -e '\E[33;40mRunning on test: ' $FILENAME
+		tput sgr0
+		cp $FILENAME input.txt
+		echo "Starting $1..."
+		./$1
+		echo "Compare ${FILENAME:0:${#FILENAME}-3}.out & output.out"
+		echo -e '\E[32;40m'
+		diff -s -y  ${FILENAME:0:${#FILENAME}-3}".out" output.txt 
+		tput sgr0
+		echo "===================================================================="
+	done
+fi
