@@ -1,5 +1,5 @@
 #include <stdio.h>
-
+#include <stack>
 using namespace std;
 
 
@@ -8,6 +8,7 @@ const char  fOutName [] = "tst.out";
 const int INFINTIE =276447232;
 
 int levels = 0;
+
 
 struct Node
 {
@@ -19,6 +20,7 @@ struct Node
     Node* leaf;
     Node* parent;
 };
+stack<Node*> stk;
 
 Node* res = NULL;
 Node* find (int x, Node* node)
@@ -203,20 +205,28 @@ void process (Node* &result, Node* root)
     {
         process(result,root->lChild);
         process(result,root->rChild);
-        if (root->leftPath+root->rightPath > result->rightPath+result->leftPath)
+        int rootPath = 0;
+        int resPath = 0;
+        if (root->leftPath*root->rightPath==0) rootPath = root->leftPath+root->rightPath;
+        else rootPath = root->leftPath+root->rightPath-1;
+
+        if (result->leftPath*result->rightPath==0) resPath = result->leftPath+result->rightPath;
+        else resPath = result->leftPath+result->rightPath -1 ;
+
+        if (rootPath > resPath)
         {
             result = root;
         }
         else
         {
-            if (root->leftPath+root->rightPath == result->rightPath+result->leftPath)
+            if (rootPath == resPath)
             {
 
-                int resLeftLRightSumm = result->lChild?result->lChild->leaf->key:result->key + result->rChild?result->rChild->leaf->parent->key:result->key;
-                int resLeftRightLSumm = result->lChild?result->lChild->leaf->parent->key:result->key + result->rChild?result->rChild->leaf->key:result->key;
+                int resLeftLRightSumm = (result->lChild?result->lChild->leaf->key:0) + (result->rChild?result->rChild->leaf->parent->key:0);
+                int resLeftRightLSumm = (result->lChild?result->lChild->leaf->parent->key:0) + (result->rChild?result->rChild->leaf->key:0);
 
-                int rooLeftLRightSumm = root->lChild?root->lChild->leaf->key:root->key + root->rChild?root->rChild->leaf->parent->key:root->key;
-                int rooLeftRightLSumm = root->lChild?root->lChild->leaf->parent->key:root->key + root->rChild?root->rChild->leaf->key:root->key;
+                int rooLeftLRightSumm = (root->lChild?root->lChild->leaf->key:0) + (root->rChild?root->rChild->leaf->parent->key:0);
+                int rooLeftRightLSumm = (root->lChild?root->lChild->leaf->parent->key:0) + (root->rChild?root->rChild->leaf->key:0);
 
                 if (result->lChild==NULL && result->rChild!=NULL)
                 {
@@ -231,13 +241,13 @@ void process (Node* &result, Node* root)
 
                 if (root->lChild==NULL && root->rChild!=NULL)
                 {
-                    resLeftLRightSumm = root->key + root->rChild->leaf->key;
-                    resLeftRightLSumm = root->key + root->rChild->leaf->key;
+                    rooLeftLRightSumm = root->key + root->rChild->leaf->key;
+                    rooLeftRightLSumm = root->key + root->rChild->leaf->key;
                 }
                 if (root->lChild!=NULL && root->rChild==NULL)
                 {
-                    resLeftLRightSumm = root->key + root->lChild->leaf->key;
-                    resLeftRightLSumm = root->key + root->lChild->leaf->key;
+                    rooLeftLRightSumm = root->key + root->lChild->leaf->key;
+                    rooLeftRightLSumm = root->key + root->lChild->leaf->key;
                 }
 
                 if (resLeftLRightSumm>rooLeftLRightSumm || resLeftLRightSumm > rooLeftRightLSumm || resLeftRightLSumm > rooLeftLRightSumm || resLeftRightLSumm > rooLeftRightLSumm)
@@ -266,23 +276,18 @@ void printfile (FILE* fout,Node* root)
 
 void findMidle (Node* root, Node* endA, Node* endB)
 {
+
     if ((root->lChild && (root->lChild->leaf == endA->leaf || root->lChild->leaf == endB->leaf)) && root!=endA && root!=endB  )
     {
 
         findMidle(root->lChild,endA,endB);
     }
+    stk.push(root);
 
-    if (levels==0)
-    {
-        res = root;
-        levels--;
-        return;
-    }
-    levels--;
-    //  printf ("LEVELS: %d KEY: %d\n",levels,root->key);
+   // printf ("LEVELS: %d KEY: %d\n",levels,root->key);
     if ((root->rChild && (root->rChild->leaf  == endA->leaf || root->rChild->leaf == endB->leaf)) && root!=endA && root!=endB)
     {
-
+        levels--;
         findMidle(root->rChild,endA,endB);
     }
 
@@ -305,10 +310,11 @@ int main ()
 
     Node* result = root;
     process(result,root);
-    // print (root);
-    // printf ("KEY %d\n",result->key);
+ //  print (root);
+ //  printf ("KEY %d\n",result->key);
     Node* endA = NULL;
     Node* endB = NULL;
+    stk =  stack<Node*> ();
     if ((result->lChild!=NULL) && (result->rChild!=NULL))
     {
         if ((result->leftPath+result->rightPath)%2==1)
@@ -319,6 +325,9 @@ int main ()
                 endB = result->rChild->leaf->parent;
                 levels = (result->leftPath+result->rightPath)/2  ;
                 findMidle(result, endA , endB);
+                for (int i=0;i<stk.size()/2;i++) stk.pop();
+                res = stk.top();
+                remove(res->key,root);
 
             }
             if (result->lChild->leaf->key + result->rChild->leaf->parent->key > result->lChild->leaf->parent->key + result->rChild->leaf->key)
@@ -327,8 +336,11 @@ int main ()
                 endB = result->rChild->leaf;
                 levels = (result->leftPath   +result->rightPath)/2 ;
                 findMidle(result,endA,endB);
+                for (int i=0;i<stk.size()/2;i++) stk.pop();
+                res = stk.top();
+                remove(res->key,root);
             }
-            if (res!=NULL ) remove(res->key,root);
+
         }
     }
     else
@@ -340,6 +352,9 @@ int main ()
                 levels = result->rightPath/2 ;
 
                 findMidle(result,result->leaf,result->leaf);
+                //remove(res->key,root);
+                for (int i=0;i<stk.size()/2;i++) stk.pop();
+                res = stk.top();
                 remove(res->key,root);
 
             }
@@ -348,13 +363,16 @@ int main ()
         {
             if (result->leftPath%2 ==0)
             {
-
                 levels = result->leftPath/2 ;
                 findMidle(result,result->leaf,result->leaf);
+              //  remove(res->key,root);
+                for (int i=0;i<stk.size()/2;i++) stk.pop();
+                res = stk.top();
                 remove(res->key,root);
 
             }
         }
+
     }
     FILE* fout = fopen (fOutName,"w");
     printfile(fout,root);

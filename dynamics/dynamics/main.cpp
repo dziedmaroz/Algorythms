@@ -14,9 +14,8 @@ const char file_out[] = "output.txt";
 
 
 struct Node
-{
-    char chLetter;
-    char chNum;
+{   
+    //char chNum;
     map<char, Node*> children;
     bool wrdBegin;
 };
@@ -41,16 +40,7 @@ void addWord (string word, Node* &node, int pos)
     if (node->children[word[pos]]==NULL)
     {
         node->children[word[pos]]=new Node;
-        node->children[word[pos]]->chLetter = word[pos];
-        node->children[word[pos]]->wrdBegin = false;
-        if (word[pos]>='A' && word[pos]<='Z')
-        {
-            node->children[word[pos]]->chNum = table[word[pos]-'A'];
-        }
-        else
-        {
-             node->children[word[pos]]->chNum = word[pos];
-        }
+        node->children[word[pos]]->wrdBegin = false;       
     }
     if (pos==0)
     {
@@ -86,8 +76,7 @@ int main ()
 {
     Node* root = new Node;
     FILE* fin = fopen (file_in,"r");
-    map<int, map<string , string> > words;
-   //string number;
+    map<int, map<string , string> > words;  
     char number [10010];
     int resTable [10010][2];
     fscanf(fin,"%s",&number);
@@ -105,12 +94,11 @@ int main ()
         char tmpStr [110];
         fscanf (fin,"%s",&tmpStr);
         word = tmpStr;
-        num = wordToNumber(word);       
+        num = wordToNumber(word);
         addWord(num,root,num.length());
         words[num.length()][num]=word;
     }
     fclose (fin);
-
     for (int i=0;i<strlen(number);i++)
     {
         int k = i;
@@ -127,7 +115,7 @@ int main ()
                 }
                 else
                 {
-                    if (resTable[k-1][0]!=0 && (resTable[i][0] < resTable[k-1][0]+1 || resTable[i][0]==0))
+                    if (resTable[k-1][0]!=0 && (resTable[i][0] > resTable[k-1][0]+1 || resTable[i][0]==0))
                     {
                         resTable[i][0] = resTable[k-1][0]+1;
                         resTable[i][1] = k ;
@@ -165,8 +153,6 @@ int main ()
     {
         fprintf (fout,"No solution\n");
     }
-
-
     fclose (fout);
     clear (root);
     return 0;
