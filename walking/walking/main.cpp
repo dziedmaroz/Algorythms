@@ -1,61 +1,72 @@
 #include <stdio.h>
-#include <math.h>
-const char file_in[] = "input.txt";
-const char file_out[] = "output.txt";
+#include <vector>
+#include <cmath>
+using namespace std;
 
-struct Edge
-{
-    int from;
-    int to;
-    int weight;
-};
+const char  file_in [] = "input.txt";
+const char  file_out [] = "output.txt";
 
-struct Vertex
-{
-    int ID;
-    int x;
-    int y;
-};
+bool try_kuhn (int v, vector<vector<int> > &g, vector<int> &matching, vector<char> &visited) {
+    if (visited[v])  return false;
+    visited[v] = true;
+    for (size_t i=0; i<g[v].size(); ++i) {
+        int to = g[v][i];
+        if (matching[to] == -1 || try_kuhn (matching[to],g,matching,visited)) {
+            matching[to] = v;
+            return true;
+        }
+    }
+    return false;
+}
 
 double dist (int x1, int y1, int x2, int y2)
 {
-    return pow((double)(x1-x2)*(x1-x2)+(y1-y2)*(y1-y2),0.5);
+    return pow((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2),0.5);
 }
 
-int main ()
+int  main(int argc, char **argv)
 {
-    FILE* fin = fopen (file_in);
-    Vertex favPoints [100];
-    Vertex keyPoints [100];
-    int favCount = 0;
-    int keyCount = 0;
-
-    fscanf(fin,"%d %d",&keyCount,&favCount);
-    for (int i=0;i<keyCount;i++)
+    int n, k;
+    vector < vector<int> > g;
+    vector<int> matching;
+    vector<char> visited;
+    FILE* fin = fopen(file_in,"r");
+    fscanf (fin,"%d %d",&n,&k);
+    int controlPoints [100][2];
+    int favPlaces [100][2];
+    for (int i=0;i<n;i++)
     {
-        keyPoints[i].ID=i;
-        fscanf (fin,"%d %d",&keyPoints[i].x,&keyPoints[i].y);
+        fscanf (fin,"%d %d",&controlPoints[i][0],&controlPoints[i][1]);
     }
-    for (int i=0;i<favCount;i++)
+    for (int i=0;i<k;i++)
     {
-        favPoints[i].ID=i;
-        fscanf (fin,"%d %d",&favPoints[i].x,&favPoints[i].y);
+        fscanf (fin,"%d %d",&favPlaces[i][0],&favPlaces[i][1]);
     }
-    fclose (fin);
+    fclose(fin);
+    g = vector<vector<int> > (n);
 
-    for (int i=0;i<keyCount;i++)
+    for (int i=1;i<n;i++)
     {
-        for (int j=i+1;j<keyCount;j++)
+
+        for (int j=0;j<k;j++)
         {
-            for (int k=0;k<favCount;k++)
+            if (2*dist(controlPoints[i-1][0],controlPoints[i-1][1],controlPoints[i][0],controlPoints[i][1])>   (dist (controlPoints[i-1][0],controlPoints[i-1][1],favPlaces[j][0],favPlaces[j][1]) + dist (favPlaces[j][0],favPlaces[j][1],controlPoints[i][0],controlPoints[i][1])))
             {
-                if (2*(dist(keyPoints[i].x,keyPoints[i].y,keyPoints[j].x,keyPoints[j].y))<(dist(keyPoints[i].x,keyPoints[i].y,favPoints[k].x,favPoints[k].y)+dist(keyPoints[j].x,keyPoints[j].y,favPoints[k].x,favPoints[k].y)))
-                {
-                   // добавляем ребро в граф
-                }
+                g[i].insert(g[i].end(),j);
             }
         }
     }
 
-    return 0;
+    matching.assign (k, -1);
+    for (int v=0; v<n; ++v) {
+        visited.assign (n, false);
+        try_kuhn (v,g,matching,visited);
+    }
+
+    int count=0;
+    for (int i=0; i<k; ++i)
+        if (matching[i] != -1) count++;
+    FILE* fout = fopen (file_out,"w");
+    fprintf (fout,"%d %d\n",n+count,count);
+    fclose (fout);
 }
