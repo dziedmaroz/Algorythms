@@ -16,10 +16,9 @@ struct Node
     int id;
 };
 
-char* wordToNumber (char* word)
+void wordToNumber (char* word, char* &num)
 {
-    char* num = new char [strlen(word)+1];
-    for (int i=0;i<strlen(word);i++)
+    for (uint i=0;i<strlen(word);i++)
     {
         if (word[i]>='A' && word[i]<='Z')
         {
@@ -31,7 +30,6 @@ char* wordToNumber (char* word)
         }
     }
     num[strlen(word)]='\0';
-    return num;
 }
 
 
@@ -70,31 +68,29 @@ int main ()
     Node* root = new Node;
     for (int i=0;i<10;i++) root->children[i]=NULL;
     FILE* fin = fopen (file_in,"r");
-   // map<int, map<int , string> > words;
     char** wordArr = new char*[50010];
     char number [10010];
     int resTable [10010][2];
     fscanf(fin,"%s",&number);
-    for (int i=0;i<strlen(number);i++)
+    for (uint i=0;i<strlen(number);i++)
     {
         resTable[i][0] = 0;
         resTable[i][1] = 0;
     }
     int wordCount = 0 ;
     fscanf (fin,"%d",&wordCount);
-    char* num=NULL;
+    char* num= new char [110];
     for (int i=0;i<wordCount;i++)
     {
         wordArr[i] = new char[110];
         fscanf (fin,"%s",wordArr[i]);
-        wordArr[i];
-        num = wordToNumber(wordArr[i]);
+        wordToNumber(wordArr[i],num);
         addWord(num,root,strlen(num), i);
-        delete [] num;
-    }
 
+    }
+    delete [] num;
     fclose (fin);
-    for (int i=0;i<strlen(number);i++)
+    for (uint i=0;i<strlen(number);i++)
     {
         int k = i;
         Node* node = root;
@@ -147,7 +143,9 @@ int main ()
         fprintf (fout,"No solution\n");
     }
     fclose (fout);
-    delete [] wordArr;
-    clear (root);
+//    for (int i=0;i<50010;i++) delete[] wordArr[i];
+//    delete [] wordArr;
+//    clear (root);
+//    delete root;
     return 0;
 }
