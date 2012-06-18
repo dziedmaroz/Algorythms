@@ -32,7 +32,7 @@ int cmp (Word wrd1, Word wrd2)
 char* wtn (char* word)
 {
     char* res = new char [strlen(word)+1];
-    for (int i=0;i<strlen(word);i++)
+    for (uint i=0;i<strlen(word);i++)
     {
         if (word[i]>='A' && word[i]<='Z')
             res[i]=table[word[i]-'A'];
@@ -52,14 +52,14 @@ int main ()
     int wordCount = 0;
     map<int, map<string , Word> > words;
     Res** result = new Res* [10000];
-    char* number = new char[10000];    
+    char* number = new char[10000];
     fscanf(fin,"%s",number);
     int numLen = strlen(number);
     fscanf(fin,"%d",&wordCount);
     for (int i= 0;i<wordCount;i++)
     {
         Word wrd;
-        char* tmp = new char [100];
+        char* tmp = new char [200];
         fscanf(fin,"%s",tmp);
         wrd.word = string(tmp);
         wrd.number = string(wtn(tmp));
@@ -135,7 +135,7 @@ int main ()
 
         }
         fprintf(fout,"%s ",words[tmpArr[0]+1][numStr.substr(0,tmpArr[0]+1)].word.c_str());
-        for (int i=1;i<result[0][numLen-1].delim.size();i++)
+        for (uint i=1;i<result[0][numLen-1].delim.size();i++)
         {
 
             if (i+1==result[0][numLen-1].delim.size())

@@ -32,9 +32,6 @@ bool findLatest (int &to)
 		to = i;
 	    }
 	}
-
-
-
 	return finded;
 }
 

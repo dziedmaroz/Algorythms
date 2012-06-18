@@ -15,7 +15,7 @@ for i in 1..NUMLEN/WORDLEN do
 end
 
 fin<<"\n"<<WORDCOUNT<<"\n"
-words.each{|i| fin<<i<<"\n"}
+words.shuffle.each{|i| fin<<i<<"\n"}
 
 fin.close
 fout.close
